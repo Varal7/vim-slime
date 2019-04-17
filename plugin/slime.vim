@@ -65,6 +65,10 @@ function! s:TmuxSend(config, text)
   call s:TmuxCommand(a:config, "paste-buffer -d -t " . shellescape(a:config["target_pane"]))
 endfunction
 
+function! s:TmuxSendCC(config)
+  call s:TmuxCommand(a:config, "send-keys -t " . shellescape(a:config["target_pane"]) . " C-c")
+endfunction
+
 function! s:TmuxPaneNames(A,L,P)
   let format = '#{pane_id} #{session_name}:#{window_index}.#{pane_index} #{window_name}#{?window_active, (active),}'
   return s:TmuxCommand(b:slime_config, "list-panes -a -F " . shellescape(format))
@@ -281,6 +285,13 @@ function! s:SlimeSendOp(type, ...) abort
   call s:SlimeRestoreCurPos()
 endfunction
 
+
+function! s:SlimeSendCC() abort
+  call s:SlimeGetConfig()
+  call s:SlimeDispatch('SendCC', b:slime_config)
+endfunction
+
+
 function! s:SlimeSendRange(startline, endline) abort
   call s:SlimeGetConfig()
 
@@ -352,6 +363,7 @@ endfunction
 " Setup key bindings
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+command -bar -nargs=0 SlimeSendCC call s:SlimeSendCC()
 command -bar -nargs=0 SlimeConfig call s:SlimeConfig()
 command -range -bar -nargs=0 SlimeSend call s:SlimeSendRange(<line1>, <line2>)
 command -nargs=+ SlimeSend1 call s:SlimeSend(<q-args> . "\r")
@@ -365,6 +377,7 @@ noremap <unique> <script> <silent> <Plug>SlimeLineSend :<c-u>call <SID>SlimeSend
 noremap <unique> <script> <silent> <Plug>SlimeMotionSend <SID>Operator
 noremap <unique> <script> <silent> <Plug>SlimeParagraphSend <SID>Operatorip
 noremap <unique> <script> <silent> <Plug>SlimeConfig :<c-u>SlimeConfig<cr>
+noremap <unique> <script> <silent> <Plug>SlimeSendCC :<c-u>SlimeSendCC<cr>
 
 if !exists("g:slime_no_mappings") || !g:slime_no_mappings
   if !hasmapto('<Plug>SlimeRegionSend', 'x')
